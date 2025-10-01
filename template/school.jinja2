@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="container" id="app">
+        <div style="height: 10px"></div>
+
+        <div class="card">
+            <div class="card-header">
+                {{ school.name }}
+            </div>
+            {% if students.__len__()>0 %}
+                <table class="table table-striped" style="margin: 0;padding: 0">
+                    <tr>
+                        <th>名字</th>
+                        <th></th>
+                    </tr>
+
+                    {% for s in students %}
+                        <tr>
+                            <td>{{ s.user_nicename or s.user_loginname }}</td>
+                            <td style="width: 100px">
+                                <button class="btn btn-primary"
+                                        data-school_id="{{ school.id }}"
+                                        data-user_id="{{ s.user_id }}"
+                                        @click="btnAsClicked">
+                                    暗恋 Ta
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% else %}
+                <div class="card-body">暂无内容</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        Vue.createApp({
+            setup() {
+                async function btnAsClicked(e) {
+                    let dataset = e.target.dataset;
+                    let targetUserId = dataset.user_id;
+                    let schoolId = dataset.school_id;
+
+                    let formData = new FormData();
+                    formData.append("as_user_id", targetUserId);
+                    formData.append("school_id", schoolId);
+                    let resp = await fetch("/apis/business.as.aspx", {
+                        method: "POST",
+                        body: formData
+                    });
+                    let result = await resp.json();
+                    if (result.code == 0) {
+                        alert("已提交");
+                    } else if (result.code == 9003) {
+                        alert("您尚未登录");
+                    } else {
+                        console.error(result);
+                    }
+                }
+
+                return {btnAsClicked}
+            }
+        }).mount("#app");
+    </script>
+{% endblock %}

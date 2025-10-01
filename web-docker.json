@@ -1,0 +1,19 @@
+{
+  "serverPort": 8000,
+  "staticRoot": "static",
+  "templateRoot": "template",
+  "db": "mysql",
+  "dbHost": "db",
+  "dbPort": 3306,
+  "dbUser": "root",
+  "dbPassword": "cms4py",
+  "dbName": "cms4py",
+  "dbPoolMinsize": 0,
+  "dbPoolMaxsize": 10,
+  "workers": 1,
+  "logLevel": "debug",
+  "siteName": "cms4py",
+  "sessionJwtName": "cms4py_jwt",
+  "sessionJwtSecret": "Id9B03N5l",
+  "sessionAge": 604800
+}

@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div style="height: 10px"></div>
+    <div class="card">
+
+        <div class="card-header">
+            学校名称
+        </div>
+
+        <div class="list-group">
+            {%for s in schools%}
+            <a href="/school/{{s.id}}" class="list-group-item list-group-item-action">{{s.name}}</a>
+            {%endfor%}
+        </div>
+    </div>
+</div>
+{% endblock %}

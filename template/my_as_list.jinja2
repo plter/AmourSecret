@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="card" style="margin-top: 1rem">
+            <div class="card-header">
+                我的暗恋单
+            </div>
+            <table class="table table-striped" style="padding: 0;margin: 0">
+                <thead>
+                <tr>
+                    <th>对方</th>
+                    <th>院校</th>
+                    <th>状态</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for a in as_list %}
+                    <tr>
+                        <td>{{ a.target_user_nicename or a.target_user_login_name }}</td>
+                        <td>{{ a.school_name }}</td>
+                        <td>{{ "已配对，去表白吧！" if a.paired else "单恋一枝花" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

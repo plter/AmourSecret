@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" id="profile-app">
+    <div style="height: 10px"></div>
+    <div class="card">
+        <div class="card-header">
+            基本信息
+        </div>
+
+        <table class="table" style="margin: 0;padding: 0">
+            <tbody>
+                <tr>
+                    <th>登录名</th>
+                    <td>{{user.login_name}}</td>
+                </tr>
+                <tr>
+                    <th>手机</th>
+                    <td>{{user.phone}}</td>
+                </tr>
+                <tr>
+                    <th>邮箱</th>
+                    <td>{{user.email}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="height: 10px"></div>
+    <div class="card">
+        <div class="card-header" style="display: flex;flex-direction: row">
+            <div>
+                所属院校
+            </div>
+            <div style="flex: 1"></div>
+            <button class="btn btn-sm" style="padding: 0;min-width: 24px" @click="btnShowSchoolListClicked">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg"
+                    viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+                </svg>
+            </button>
+        </div>
+
+        <table v-if="relatedSchools.length>0" class="table" style="margin: 0;">
+            <tbody>
+                <tr v-for="s in relatedSchools">
+                    <td v-text="s.name"></td>
+                    <td>
+                        <button :data-relation_id="s.relation_id" class="btn btn-primary btn-sm"
+                            @click="btnRemoveRelatedSchoolClicked">移除
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div v-else class="card-body" v-text="relatedSchoolsListPlaceHolder"></div>
+    </div>
+
+    <div id="select-related-school-modal" class="modal fade" tabindex="-1" style="max-height: 600px">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">院校列表</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table v-if="schools.length>0" class="table">
+                        <tbody>
+                            <tr v-for="s in schools">
+                                <td v-text="s.name"></td>
+                                <td>
+                                    <button :data-school_id="s.id" class="btn btn-primary btn-sm"
+                                        @click="btnSelectSchoolClicked">选择
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div v-else style="text-align: center;">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+
+        Vue.createApp({
+            setup() {
+
+                let schools = Vue.reactive([]);
+                let relatedSchools = Vue.reactive([]);
+                let relatedSchoolsListPlaceHolder = Vue.ref("加载中...");
+
+                async function btnRemoveRelatedSchoolClicked(e) {
+                    let relationId = e.target.dataset["relation_id"];
+                    console.log("Selected relation id is: " + relationId);
+                    let body = new FormData();
+                    body.append("relation_id", relationId);
+                    await (await fetch("/apis/business.remove_related_school.aspx", { method: "POST", body: body })).json();
+                    await loadRelatedSchools();
+                }
+
+                async function btnShowSchoolListClicked() {
+                    bootstrap.Modal.getOrCreateInstance("#select-related-school-modal").show();
+
+                    let resp = await fetch("/apis/business.school_list.aspx", { method: "POST" });
+                    let data = await resp.json();
+
+                    if (data.code) {
+                        alert("加载院校列表失败");
+                    } else if (data.code === 0) {
+                        schools.splice(0, schools.length, ...data.result);
+                    }
+                }
+
+                async function btnSelectSchoolClicked(e) {
+                    bootstrap.Modal.getOrCreateInstance("#select-related-school-modal").hide();
+                    console.log("Selected school id is: " + e.target.dataset.school_id);
+
+                    let formData = new FormData();
+                    formData.append("school_id", e.target.dataset.school_id);
+                    let resp = await fetch("/apis/business.add_related_school.aspx", {
+                        method: "POST",
+                        body: formData
+                    });
+                    console.log(await resp.json());
+                    await loadRelatedSchools();
+                }
+
+                async function loadRelatedSchools() {
+                    let resp = await fetch("/apis/business.load_related_schools.aspx", { method: "POST" });
+                    let data = await resp.json();
+                    if (data && data.result && data.result.length) {
+                        relatedSchools.splice(0, relatedSchools.length, ...data.result);
+                    } else {
+                        relatedSchools.splice(0, relatedSchools.length);
+                        relatedSchoolsListPlaceHolder.value = "尚未关联院校";
+                    }
+                }
+
+                Vue.onMounted(() => {
+                    loadRelatedSchools();
+                });
+
+                return {
+                    btnShowSchoolListClicked,
+                    schools, relatedSchools,
+                    btnSelectSchoolClicked,
+                    btnRemoveRelatedSchoolClicked,
+                    relatedSchoolsListPlaceHolder
+                }
+            }
+        }).mount("#profile-app");
+    })();
+</script>
+{% endblock %}

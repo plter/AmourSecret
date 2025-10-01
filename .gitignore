@@ -1,0 +1,11 @@
+*.pyc
+.DS_Store
+venv
+.idea
+node_modules
+data
+.vscode
+out
+__pycache__
+.venv
+mariadb_data
